@@ -1,12 +1,15 @@
 import random
-import requests
+import urllib.request
+import tkinter as tk
 
 # URL do dicionário online
 url = "https://www.ime.usp.br/~pf/dicios/br-sem-acentos.txt"
 
 # Faz o download do dicionário e o transforma em uma lista de palavras
-response = requests.get(url)
-palavras = response.content.decode("utf-8").split()
+with urllib.request.urlopen(url) as response:
+    palavras_bytes = response.read()
+    palavras_str = palavras_bytes.decode("utf-8")
+    palavras = palavras_str.split()
 
 # Função para escolher uma palavra aleatória da lista
 def escolher_palavra():
@@ -25,21 +28,35 @@ def esconder_letra(palavra):
 
 # Função principal do jogo
 def jogar():
+    # Cria a janela principal
+    janela = tk.Tk()
+    janela.title("Jogo de Alfabetização")
+
     # Escolhe uma palavra aleatória e esconde uma letra
     palavra = escolher_palavra()
     letra_escondida, palavra_escondida = esconder_letra(palavra)
 
-    # Mostra a palavra escondida na tela
-    print("Adivinhe a palavra: " + palavra_escondida)
+    # Cria os widgets na janela
+    tk.Label(janela, text="Adivinhe a palavra:").pack()
+    lbl_palavra = tk.Label(janela, text=palavra_escondida)
+    lbl_palavra.pack()
+    tk.Label(janela, text="Digite a letra que está faltando na palavra:").pack()
+    entry_letra = tk.Entry(janela)
+    entry_letra.pack()
+    btn_verificar = tk.Button(janela, text="Verificar", command=lambda: verificar_letra(entry_letra.get(), letra_escondida, palavra, lbl_palavra))
+    btn_verificar.pack()
 
-    # Pede para o jogador digitar a letra escondida
-    letra_digitada = input("Digite a letra que está faltando na palavra: ")
+    # Inicia a janela
+    janela.mainloop()
 
-    # Verifica se a letra digitada está correta
+# Função para verificar se a letra digitada está correta
+def verificar_letra(letra_digitada, letra_escondida, palavra, lbl_palavra):
     if letra_digitada == letra_escondida:
-        print("Parabéns, você acertou!")
+        tk.messagebox.showinfo("Parabéns", "Você acertou!")
     else:
-        print("Infelizmente você errou. A letra correta era " + letra_escondida)
+        tk.messagebox.showerror("Errou", "A letra correta era " + letra_escondida)
+    letra_escondida, palavra_escondida = esconder_letra(palavra)
+    lbl_palavra.config(text=palavra_escondida)
 
 # Executa o jogo
 jogar()
